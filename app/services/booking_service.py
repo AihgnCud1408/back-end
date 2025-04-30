@@ -33,7 +33,7 @@ class BookingService:
         db.commit()
         db.refresh(booking)
 
-        Timer(30*60, lambda: event_subject.notify(db, "checkin_timeout", {"booking_id": booking.id})).start()
+        Timer(30*60, lambda: event_subject.notify("checkin_timeout", {"booking_id": booking.id})).start()
 
         return booking
 

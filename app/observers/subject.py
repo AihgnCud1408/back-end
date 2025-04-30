@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
 class Observer:
-    def update(self, db: Session, event: str, data: dict):
+    def update(self, event: str, data: dict):
         pass
 
 class Subject:
@@ -16,8 +16,8 @@ class Subject:
         if observer in self._observers:
             self._observers.remove(observer)
 
-    def notify(self, db: Session, event: str, data: dict):
+    def notify(self, event: str, data: dict):
         for observer in self._observers:
-            observer.update(db, event, data)
+            observer.update(event, data)
 
 event_subject = Subject()

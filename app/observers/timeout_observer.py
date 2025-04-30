@@ -1,11 +1,11 @@
-from sqlalchemy.orm import Session
+from app.db.session import SessionLocal
 from datetime import datetime, timedelta
 from app.observers.subject import Observer
 from app.observers.singleton import SingletonMeta
 from app.models.booking import Booking, BookingStatus
 
 class TimeoutObserver(Observer, metaclass=SingletonMeta):
-    def update(self, db: Session, event: str, data: dict):
+    def update(self, event: str, data: dict):
         if event != "checkin_timeout":
             return
 
@@ -13,6 +13,7 @@ class TimeoutObserver(Observer, metaclass=SingletonMeta):
         if not booking_id:
             return
 
+        db = SessionLocal()
         try:
             booking = db.query(Booking).get(booking_id)
             if (booking
@@ -22,4 +23,4 @@ class TimeoutObserver(Observer, metaclass=SingletonMeta):
                 db.add(booking)
                 db.commit()
         finally:
-            return
+            db.close()

@@ -33,7 +33,7 @@ class CheckinService:
         db.commit()
         db.refresh(log)
 
-        event_subject.notify(db, "checked_in", {"room_id": booking.room_id})
+        event_subject.notify("checked_in", {"room_id": booking.room_id})
 
         return log
 
