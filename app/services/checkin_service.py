@@ -6,9 +6,9 @@ from app.models.checkin import CheckinLog
 from app.models.room import Room, RoomStatus
 from app.observers.subject import event_subject
 
-
 class CheckinService:
-    def check_in(self, db: Session, user_code: int, booking_id: int) -> CheckinLog:
+    @staticmethod
+    def check_in(db: Session, user_code: int, booking_id: int) -> CheckinLog:
         booking = db.query(Booking).filter(
             Booking.id == booking_id,
             Booking.user_code == user_code,
@@ -37,8 +37,8 @@ class CheckinService:
 
         return log
 
-
-    def check_out(self, db: Session, user_code: int, booking_id: int) -> CheckinLog:
+    @staticmethod
+    def check_out(db: Session, user_code: int, booking_id: int) -> CheckinLog:
         booking = db.query(Booking).filter(
             Booking.id == booking_id,
             Booking.user_code == user_code

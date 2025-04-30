@@ -1,7 +1,5 @@
-import json
 import pika
 from app.config import config
-
 
 class RabbitManager:
     def __init__(self):

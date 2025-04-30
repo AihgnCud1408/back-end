@@ -6,7 +6,6 @@ from app.db.session import get_db
 from app.services.auth_service import get_current_user
 from app.models.user import User
 
-
 router = APIRouter(prefix="/check", tags=["checkin"])
 
 @router.post("/in/{booking_id}", response_model=CheckinReadSchema)

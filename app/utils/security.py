@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 import jwt
 from app.config import config
 
-
 def hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 

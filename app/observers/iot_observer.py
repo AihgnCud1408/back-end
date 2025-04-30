@@ -4,7 +4,6 @@ from app.observers.singleton import SingletonMeta
 from app.models.room import Room, SensorStatus
 from app.models.device import Device, DeviceStatus
 
-
 class IotObserver(Observer, metaclass=SingletonMeta):
     def update(self, db: Session, event: str, data: dict):
         if event != "checked_in":

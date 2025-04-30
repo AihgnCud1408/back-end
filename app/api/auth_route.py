@@ -6,7 +6,6 @@ from app.schemas.auth_schema import TokenSchema
 from app.db.session import get_db
 from app.services.auth_service import AuthService
 
-
 router = APIRouter()
 
 @router.post("/signup", response_model=UserReadSchema)

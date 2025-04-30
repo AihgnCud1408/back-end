@@ -1,13 +1,15 @@
 from sqlalchemy.orm import Session
-from fastapi import HTTPException, status
-from datetime import datetime
+from fastapi import HTTPException, status, BackgroundTasks
+from datetime import datetime, timedelta
 from app.models.booking import Booking, BookingStatus
+from app.models.room import Room
 from threading import Timer
 from app.observers.subject import event_subject
-
+from app.services.notification_service import get_notification_service
 
 class BookingService:
-    def create_booking(self, db: Session, user_code: int, room_id: int, start_time: datetime, end_time: datetime):
+    @staticmethod
+    def create_booking(db: Session, user_code: int, room_id: int, start_time: datetime, end_time: datetime):
         # now = datetime.now()
         # if start_time <= now:
         #     raise HTTPException(status.HTTP_400_BAD_REQUEST, "Cannot booking at this time")
@@ -37,12 +39,12 @@ class BookingService:
 
         return booking
 
-
-    def get_user_bookings(self, db: Session, user_code: int):
+    @staticmethod
+    def get_user_bookings(db: Session, user_code: int):
         return db.query(Booking).filter(Booking.user_code == user_code).all()
 
-
-    def cancel_booking(self, db: Session, booking_id: int, user_code: int):
+    @staticmethod
+    def cancel_booking(db: Session, booking_id: int, user_code: int):
         booking = db.query(Booking).filter(
             Booking.id == booking_id,
             Booking.user_code == user_code
@@ -55,3 +57,30 @@ class BookingService:
         db.commit()
         db.refresh(booking)
         return booking
+
+    @staticmethod
+    def schedule_reminder(db: Session, booking: Booking, background_tasks: BackgroundTasks):
+        remind_at = booking.start_time - timedelta(minutes=20)
+        delay = (remind_at - datetime.now()).total_seconds()
+        if delay > 0:
+            background_tasks.add_task(
+                BookingService._send_reminder,
+                db,
+                booking.user_code,
+                booking.id,
+                booking.room_id,
+                delay
+            )
+
+    @staticmethod
+    def _send_reminder(db: Session, user_code: int, booking_id: int, room_id: int, delay: float):
+        import time
+        time.sleep(delay)
+        room = db.query(Room).filter(Room.id == room_id).first()
+        get_notification_service().send_message(
+            queue_name=f"reminder_queue_{user_code}",
+            payload={
+                "booking_id": booking_id,
+                "room_code": room.room_code
+            }
+        )

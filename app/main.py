@@ -7,7 +7,6 @@ from app.observers.subject import event_subject
 from app.observers.iot_observer import IotObserver
 from app.observers.timeout_observer import TimeoutObserver
 
-
 Base.metadata.create_all(bind=engine)
 
 @asynccontextmanager
@@ -27,16 +26,13 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
 
-
 @app.get("/hello/{name}")
 async def say_hello(name: str):
     return {"message": f"Hello {name}"}
-
 
 app.include_router(auth_route.router, tags=["auth"])
 app.include_router(booking_route.router, tags=["booking"])

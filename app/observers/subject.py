@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 from sqlalchemy.orm import Session
 
-
 class Observer(ABC):
     @abstractmethod
     def update(self, db: Session, event: str, data: dict):

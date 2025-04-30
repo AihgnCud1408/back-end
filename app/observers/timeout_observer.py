@@ -4,7 +4,6 @@ from app.observers.subject import Observer
 from app.observers.singleton import SingletonMeta
 from app.models.booking import Booking, BookingStatus
 
-
 class TimeoutObserver(Observer, metaclass=SingletonMeta):
     def update(self, db: Session, event: str, data: dict):
         if event != "checkin_timeout":
