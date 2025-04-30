@@ -15,13 +15,14 @@ CREATE TABLE rooms (
     room_code VARCHAR(20) NOT NULL UNIQUE,
     room_type ENUM('individual', 'group', 'mentoring') NOT NULL,
     location VARCHAR(100) NOT NULL,
-    status ENUM('available', 'in_use', 'maintenance') NOT NULL
+    status ENUM('available', 'in_use', 'maintenance') NOT NULL,
+    sensor ENUM('active', 'inactive') NOT NULL
 );
 
 CREATE TABLE devices (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
-    type VARCHAR(50) NOT NULL,
+    type ENUM('light', 'fan', 'air_conditioner') NOT NULL,
     status ENUM('on', 'off', 'error') NOT NULL,
     room_id INT NOT NULL,
     FOREIGN KEY (room_id) REFERENCES rooms(id)
