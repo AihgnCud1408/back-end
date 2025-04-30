@@ -1,0 +1,12 @@
+fastapi~=0.115.12
+uvicorn
+pydantic~=2.11.3
+python-dotenv~=1.1.0
+sqlalchemy~=2.0.40
+pydantic-settings>=2.0
+pymysql
+pyjwt~=2.10.1
+bcrypt~=4.3.0
+pika
+setuptools
+python-multipart
