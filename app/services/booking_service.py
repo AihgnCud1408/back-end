@@ -1,11 +1,9 @@
 from sqlalchemy.orm import Session
-from fastapi import HTTPException, status, BackgroundTasks
-from datetime import datetime, timedelta
+from fastapi import HTTPException, status
+from datetime import datetime
 from app.models.booking import Booking, BookingStatus
-from app.models.room import Room
 from threading import Timer
 from app.observers.subject import event_subject
-from app.services.notification_service import get_notification_service
 
 class BookingService:
     @staticmethod
@@ -57,30 +55,3 @@ class BookingService:
         db.commit()
         db.refresh(booking)
         return booking
-
-    @staticmethod
-    def schedule_reminder(db: Session, booking: Booking, background_tasks: BackgroundTasks):
-        remind_at = booking.start_time - timedelta(minutes=20)
-        delay = (remind_at - datetime.now()).total_seconds()
-        if delay > 0:
-            background_tasks.add_task(
-                BookingService._send_reminder,
-                db,
-                booking.user_code,
-                booking.id,
-                booking.room_id,
-                delay
-            )
-
-    @staticmethod
-    def _send_reminder(db: Session, user_code: int, booking_id: int, room_id: int, delay: float):
-        import time
-        time.sleep(delay)
-        room = db.query(Room).filter(Room.id == room_id).first()
-        get_notification_service().send_message(
-            queue_name=f"reminder_queue_{user_code}",
-            payload={
-                "booking_id": booking_id,
-                "room_code": room.room_code
-            }
-        )

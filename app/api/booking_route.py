@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, BackgroundTasks
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from typing import List
 from app.schemas.booking_schema import BookingCreateSchema, BookingReadSchema
@@ -12,7 +12,6 @@ router = APIRouter(prefix="/booking", tags=["booking"])
 @router.post("/", response_model=BookingReadSchema)
 def book_room(
     payload: BookingCreateSchema,
-    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -23,7 +22,6 @@ def book_room(
         payload.start_time,
         payload.end_time,
     )
-    BookingService.schedule_reminder(db, booking, background_tasks)
     return booking
 
 @router.get("/", response_model=List[BookingReadSchema])

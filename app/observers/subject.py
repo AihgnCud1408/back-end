@@ -1,8 +1,6 @@
-from abc import ABC, abstractmethod
 from sqlalchemy.orm import Session
 
-class Observer(ABC):
-    @abstractmethod
+class Observer:
     def update(self, db: Session, event: str, data: dict):
         pass
 
