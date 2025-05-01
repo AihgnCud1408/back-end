@@ -2,5 +2,6 @@ from sqlalchemy.orm import Session
 from app.models.room import Room
 
 class RoomService:
-    def get_all_rooms(self, db: Session):
+    @staticmethod
+    def get_all_rooms(db: Session):
         return db.query(Room).all()

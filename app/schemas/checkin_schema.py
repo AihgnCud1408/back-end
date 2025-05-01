@@ -1,9 +1,6 @@
 from pydantic import BaseModel
 from datetime import datetime
 
-class CheckinCreateSchema(BaseModel):
-    booking
-
 class CheckinReadSchema(BaseModel):
     id: int
     booking_id: int
