@@ -9,10 +9,14 @@ from app.observers.subject import event_subject
 
 class CheckinService:
     @staticmethod
-    def check_in(db: Session, user_id: str, room_id: int):
-        room = db.query(Room).filter(Room.id == room_id).first()
-        if not room:
-            raise HTTPException(status.HTTP_404_NOT_FOUND, "Room not found.")
+    def check_in(db: Session, user_id: str, booking_id: int):
+        booking = db.query(Booking).filter(
+            Booking.id == booking_id,
+            Booking.user_id == user_id,
+            Booking.status == BookingStatus.active
+        ).first()
+        if not booking:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "Booking not found or not active")
 
         now = datetime.now()
         if now < booking.start_time:
