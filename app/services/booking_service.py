@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
-from datetime import datetime
+from datetime import datetime, timedelta
 from app.models.booking import Booking, BookingStatus
 from threading import Timer
 from app.observers.subject import event_subject
@@ -8,9 +8,9 @@ from app.observers.subject import event_subject
 class BookingService:
     @staticmethod
     def create_booking(db: Session, user_code: int, room_id: int, start_time: datetime, end_time: datetime):
-        # now = datetime.now()
-        # if start_time <= now:
-        #     raise HTTPException(status.HTTP_400_BAD_REQUEST, "Cannot booking at this time")
+        now = datetime.now()
+        if start_time <= now:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Cannot booking at this time")
         if start_time >= end_time:
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "Start time must be before end time")
 
@@ -33,7 +33,8 @@ class BookingService:
         db.commit()
         db.refresh(booking)
 
-        Timer(30*60, lambda: event_subject.notify("checkin_timeout", {"booking_id": booking.id})).start()
+        delay = (start_time + timedelta(minutes=5) - datetime.now()).total_seconds()
+        Timer(delay, lambda: event_subject.notify("checkin_timeout", {"booking_id": booking.id})).start()
 
         return booking
 
