@@ -47,3 +47,7 @@ CREATE TABLE checkin_logs (
     checkout_time DATETIME,
     FOREIGN KEY (booking_id) REFERENCES bookings(id)
 );
+
+INSERT INTO `rooms` (`id`, `room_code`, `room_type`, `location`, `status`, `sensor`) VALUES
+(1, 'H1_101', 'group', 'tòa H1, tầng 1', 'available', 'inactive'),
+(2, 'H2_301', 'mentoring', 'tòa H2, tầng 3', 'available', 'inactive');
