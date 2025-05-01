@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, ForeignKey, DateTime, TIMESTAMP, Enum, func
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, TIMESTAMP, Enum, func
 import enum
 from app.db.session import Base
 
@@ -10,7 +10,7 @@ class BookingStatus(str, enum.Enum):
 class Booking(Base):
     __tablename__ = "bookings"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    user_code = Column(Integer, ForeignKey("users.user_code"), nullable=False)
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=False)
     room_id = Column(Integer, ForeignKey("rooms.id"), nullable=False)
     start_time = Column(TIMESTAMP(timezone=True), nullable=False)
     end_time = Column(TIMESTAMP(timezone=True), nullable=False)

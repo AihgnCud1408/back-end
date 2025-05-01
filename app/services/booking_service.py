@@ -1,30 +1,27 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from fastapi import HTTPException, status
 from datetime import datetime, timedelta
 from app.models.booking import Booking, BookingStatus
+from app.models.room import Room
+from app.models.user import User
+from app.schemas.booking_schema import BookingReadSchema
 from threading import Timer
 from app.observers.subject import event_subject
 
 class BookingService:
     @staticmethod
-    def create_booking(db: Session, user_code: int, room_id: int, start_time: datetime, end_time: datetime):
-        now = datetime.now()
-        if start_time <= now:
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Cannot booking at this time")
-        if start_time >= end_time:
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Start time must be before end time")
-
+    def create_booking(db: Session, user_id: str, room_id: int, start_time: datetime, end_time: datetime):
         conflict = db.query(Booking).filter(
-            Booking.room_id == room_id,
+            Booking.user_id == user_id,
             Booking.status == BookingStatus.active,
             Booking.start_time < end_time,
             Booking.end_time > start_time
         ).first()
         if conflict:
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Room is already booked")
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "You have a booking at this time.")
 
         booking = Booking(
-            user_code=user_code,
+            user_id=user_id,
             room_id=room_id,
             start_time=start_time,
             end_time=end_time
@@ -36,17 +33,47 @@ class BookingService:
         delay = (start_time + timedelta(minutes=5) - datetime.now()).total_seconds()
         Timer(delay, lambda: event_subject.notify("checkin_timeout", {"booking_id": booking.id})).start()
 
-        return booking
+        user = db.query(User).filter(User.id == user_id).first()
+        room = db.query(Room).filter(Room.id == room_id).first()
+        return BookingReadSchema(
+            id=booking.id,
+            user_code=user.user_code,
+            room_code=room.room_code,
+            start_time=booking.start_time,
+            end_time=booking.end_time,
+            status=booking.status,
+            created_at=booking.created_at
+        )
 
     @staticmethod
-    def get_user_bookings(db: Session, user_code: int):
-        return db.query(Booking).filter(Booking.user_code == user_code).all()
+    def get_user_bookings(db: Session, user_id: str):
+        bookings = db.query(Booking).filter(Booking.user_id == user_id).all()
+        if not bookings:
+            return []
+
+        list_bookings = []
+        user = db.query(User).filter(User.id == user_id).first()
+        room_ids = {booking.room_id for booking in bookings}
+        rooms = db.query(Room).filter(Room.id.in_(room_ids)).all()
+        room_dict = {room.id: room for room in rooms}
+        for booking in bookings:
+            room = room_dict.get(booking.room_id)
+            list_bookings.append(BookingReadSchema(
+                id=booking.id,
+                user_code=user.user_code,
+                room_code=room.room_code,
+                start_time=booking.start_time,
+                end_time=booking.end_time,
+                status=booking.status,
+                created_at=booking.created_at
+            ))
+        return list_bookings
 
     @staticmethod
-    def cancel_booking(db: Session, booking_id: int, user_code: int):
+    def cancel_booking(db: Session, booking_id: int, user_id: str):
         booking = db.query(Booking).filter(
             Booking.id == booking_id,
-            Booking.user_code == user_code
+            Booking.user_id == user_id
         ).first()
         if not booking:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "Booking not found")
@@ -55,4 +82,15 @@ class BookingService:
         booking.status = BookingStatus.cancelled
         db.commit()
         db.refresh(booking)
-        return booking
+
+        user = db.query(User).filter(User.id == user_id).first()
+        room = db.query(Room).filter(Room.id == booking.room_id).first()
+        return BookingReadSchema(
+            id=booking.id,
+            user_code=user.user_code,
+            room_code=room.room_code,
+            start_time=booking.start_time,
+            end_time=booking.end_time,
+            status=booking.status,
+            created_at=booking.created_at
+        )

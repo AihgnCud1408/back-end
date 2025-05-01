@@ -22,4 +22,4 @@ class UserReadSchema(BaseModel):
     role: Role
 
     class Config:
-        from_attributes = True
+        orm_mode = True

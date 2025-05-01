@@ -14,7 +14,7 @@ def check_in(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    return CheckinService().check_in(db, current_user.user_code, booking_id)
+    return CheckinService().check_in(db, current_user.id, booking_id)
 
 @router.post("/out/{booking_id}", response_model=CheckinReadSchema)
 def check_out(
@@ -22,4 +22,4 @@ def check_out(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    return CheckinService().check_out(db, current_user.user_code, booking_id)
+    return CheckinService().check_out(db, current_user.id, booking_id)

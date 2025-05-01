@@ -17,7 +17,7 @@ def book_room(
 ):
     booking = BookingService.create_booking(
         db,
-        current_user.user_code,
+        current_user.id,
         payload.room_id,
         payload.start_time,
         payload.end_time,
@@ -26,8 +26,8 @@ def book_room(
 
 @router.get("/", response_model=List[BookingReadSchema])
 def get_bookings(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    return BookingService.get_user_bookings(db, current_user.user_code)
+    return BookingService.get_user_bookings(db, current_user.id)
 
 @router.post("/{booking_id}/cancel", response_model=BookingReadSchema)
 def cancel_booking(booking_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    return BookingService.cancel_booking(db, booking_id, current_user.user_code)
+    return BookingService.cancel_booking(db, booking_id, current_user.id)

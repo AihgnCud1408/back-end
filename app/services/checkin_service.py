@@ -4,30 +4,24 @@ from datetime import datetime, timezone
 from app.models.booking import Booking, BookingStatus
 from app.models.checkin import CheckinLog
 from app.models.room import Room, RoomStatus
+from app.schemas.checkin_schema import CheckinReadSchema
 from app.observers.subject import event_subject
 
 class CheckinService:
     @staticmethod
-    def check_in(db: Session, user_code: int, booking_id: int) -> CheckinLog:
-        booking = db.query(Booking).filter(
-            Booking.id == booking_id,
-            Booking.user_code == user_code,
-            Booking.status == BookingStatus.active
-        ).first()
-        if not booking:
-            raise HTTPException(status.HTTP_404_NOT_FOUND, "Booking not found or not active")
+    def check_in(db: Session, user_id: str, room_id: int):
+        room = db.query(Room).filter(Room.id == room_id).first()
+        if not room:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "Room not found.")
 
         now = datetime.now()
         if now < booking.start_time:
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "Chưa đến thời gian check-in")
-        # checkin_deadline = booking.start_time + timedelta(minutes=30)
-        # if now > checkin_deadline:
-        #     raise HTTPException(status.HTTP_400_BAD_REQUEST, "Đã quá thời gian check-in")
 
         log = CheckinLog(booking_id=booking_id, checkin_time=now)
         db.add(log)
 
-        room = db.query(Room).get(booking.room_id)
+        room = db.query(Room).filter(Room.id == booking.room_id).first()
         room.status = RoomStatus.in_use
 
         db.commit()
@@ -35,13 +29,19 @@ class CheckinService:
 
         event_subject.notify("checked_in", {"room_id": booking.room_id})
 
-        return log
+        return CheckinReadSchema(
+            id=log.id,
+            booking_id=booking.id,
+            room_code=room.room_code,
+            checkin_time=log.checkin_time,
+            checkout_time=None
+        )
 
     @staticmethod
-    def check_out(db: Session, user_code: int, booking_id: int) -> CheckinLog:
+    def check_out(db: Session, user_id: str, booking_id: int):
         booking = db.query(Booking).filter(
             Booking.id == booking_id,
-            Booking.user_code == user_code
+            Booking.user_id == user_id
         ).first()
         if not booking:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "Booking not found or not active")
@@ -53,7 +53,7 @@ class CheckinService:
         if not log:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "Check-in not found")
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now()
         log.checkout_time = now
 
         booking.status = BookingStatus.completed
@@ -62,4 +62,10 @@ class CheckinService:
 
         db.commit()
         db.refresh(log)
-        return log
+        return CheckinReadSchema(
+            id=log.id,
+            booking_id=booking.id,
+            room_code=room.room_code,
+            checkin_time=log.checkin_time,
+            checkout_time=log.checkout_time
+        )
