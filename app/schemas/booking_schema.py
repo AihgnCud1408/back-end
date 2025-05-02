@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from enum import Enum
-from datetime import datetime
+from datetime import datetime, time, date
 
 class BookingStatus(str, Enum):
     active = "active"
@@ -9,15 +9,17 @@ class BookingStatus(str, Enum):
 
 class BookingCreateSchema(BaseModel):
     room_id: int
-    start_time: datetime
-    end_time: datetime
+    booking_date: date
+    start_time: time
+    end_time: time
 
 class BookingReadSchema(BaseModel):
     id: int
     user_code: int
     room_code: str
-    start_time: datetime
-    end_time: datetime
+    booking_date: date
+    start_time: time
+    end_time: time
     status: BookingStatus
     created_at: datetime
 

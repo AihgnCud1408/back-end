@@ -15,7 +15,7 @@ class IotObserver(Observer, metaclass=SingletonMeta):
 
         db = SessionLocal()
         try:
-            room = db.query(Room).get(room_id)
+            room = db.query(Room).filter(Room.id == room_id).first()
             if room and room.sensor == SensorStatus.active:
                 light = db.query(Device).filter(
                     Device.room_id == room_id,
@@ -23,7 +23,6 @@ class IotObserver(Observer, metaclass=SingletonMeta):
                 ).first()
                 if light and light.status == DeviceStatus.off:
                     light.status = DeviceStatus.on
-                    db.add(light)
                     db.commit()
         finally:
             db.close()

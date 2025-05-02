@@ -11,12 +11,17 @@ class RoomStatus(str, Enum):
     in_use = "in_use"
     maintenance = "maintenance"
 
+class SensorStatus(str, Enum):
+    active = "active"
+    inactive = "inactive"
+
 class RoomReadSchema(BaseModel):
     id: int
     room_code: str
     room_type: RoomType
     location: str
     status: RoomStatus
+    sensor: SensorStatus
 
     class Config:
         from_attributes = True

@@ -15,12 +15,12 @@ class TimeoutObserver(Observer, metaclass=SingletonMeta):
 
         db = SessionLocal()
         try:
-            booking = db.query(Booking).get(booking_id)
+            booking = db.query(Booking).filter(Booking.id == booking_id).first()
+            start_time = datetime.combine(booking.booking_date, booking.start_time)
             if (booking
                     and booking.status == BookingStatus.active
-                    and datetime.now() >= booking.start_time + timedelta(minutes=5)):
+                    and datetime.now() >= start_time + timedelta(minutes=5)):
                 booking.status = BookingStatus.cancelled
-                db.add(booking)
                 db.commit()
         finally:
             db.close()

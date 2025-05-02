@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
-from datetime import datetime, timezone
+from datetime import datetime
 from app.models.booking import Booking, BookingStatus
 from app.models.checkin import CheckinLog
 from app.models.room import Room, RoomStatus
@@ -9,7 +9,7 @@ from app.observers.subject import event_subject
 
 class CheckinService:
     @staticmethod
-    def check_in(db: Session, user_id: str, booking_id: int):
+    def check_in(db: Session, user_id: int, booking_id: int):
         booking = db.query(Booking).filter(
             Booking.id == booking_id,
             Booking.user_id == user_id,
@@ -19,7 +19,8 @@ class CheckinService:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "Booking not found or not active")
 
         now = datetime.now()
-        if now < booking.start_time:
+        start_time = datetime.combine(booking.booking_date, booking.start_time)
+        if now < start_time:
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "Chưa đến thời gian check-in")
 
         log = CheckinLog(booking_id=booking_id, checkin_time=now)
@@ -27,6 +28,7 @@ class CheckinService:
 
         room = db.query(Room).filter(Room.id == booking.room_id).first()
         room.status = RoomStatus.in_use
+        booking.status = BookingStatus.checked_in
 
         db.commit()
         db.refresh(log)
@@ -35,14 +37,17 @@ class CheckinService:
 
         return CheckinReadSchema(
             id=log.id,
-            booking_id=booking.id,
+            booking_id=booking_id,
             room_code=room.room_code,
             checkin_time=log.checkin_time,
             checkout_time=None
         )
 
+    # @staticmethod
+    # def check_in_via_qr(db: Session, user_id: str, room_code: str):
+
     @staticmethod
-    def check_out(db: Session, user_id: str, booking_id: int):
+    def check_out(db: Session, user_id: int, booking_id: int):
         booking = db.query(Booking).filter(
             Booking.id == booking_id,
             Booking.user_id == user_id
@@ -60,7 +65,7 @@ class CheckinService:
         now = datetime.now()
         log.checkout_time = now
 
-        booking.status = BookingStatus.completed
+        booking.status = BookingStatus.checked_out
         room = db.query(Room).get(booking.room_id)
         room.status = RoomStatus.available
 

@@ -1,6 +1,6 @@
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
-from datetime import datetime, timedelta
+from datetime import datetime, time, date, timedelta
 from app.models.booking import Booking, BookingStatus
 from app.models.room import Room
 from app.models.user import User
@@ -10,19 +10,31 @@ from app.observers.subject import event_subject
 
 class BookingService:
     @staticmethod
-    def create_booking(db: Session, user_id: str, room_id: int, start_time: datetime, end_time: datetime):
-        conflict = db.query(Booking).filter(
+    def create_booking(db: Session, user_id: int, room_id: int, booking_date: date, start_time: time, end_time: time):
+        conflict1 = db.query(Booking).filter(
             Booking.user_id == user_id,
-            Booking.status == BookingStatus.active,
+            Booking.booking_date == booking_date,
             Booking.start_time < end_time,
-            Booking.end_time > start_time
+            Booking.end_time > start_time,
+            Booking.status.in_([BookingStatus.active, BookingStatus.checked_in])
         ).first()
-        if conflict:
+        if conflict1:
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "You have a booking at this time.")
+
+        conflict2 = db.query(Booking).filter(
+            Booking.room_id == room_id,
+            Booking.booking_date == booking_date,
+            Booking.start_time < end_time,
+            Booking.end_time > start_time,
+            Booking.status.in_([BookingStatus.active, BookingStatus.checked_in])
+        )
+        if conflict2:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "This room has already booked this time.")
 
         booking = Booking(
             user_id=user_id,
             room_id=room_id,
+            booking_date=booking_date,
             start_time=start_time,
             end_time=end_time
         )
@@ -30,7 +42,8 @@ class BookingService:
         db.commit()
         db.refresh(booking)
 
-        delay = (start_time + timedelta(minutes=5) - datetime.now()).total_seconds()
+        start = datetime.combine(booking_date, start_time)
+        delay = (start + timedelta(minutes=5) - datetime.now()).total_seconds()
         Timer(delay, lambda: event_subject.notify("checkin_timeout", {"booking_id": booking.id})).start()
 
         user = db.query(User).filter(User.id == user_id).first()
@@ -39,14 +52,15 @@ class BookingService:
             id=booking.id,
             user_code=user.user_code,
             room_code=room.room_code,
-            start_time=booking.start_time,
-            end_time=booking.end_time,
+            booking_date=booking_date,
+            start_time=start_time,
+            end_time=end_time,
             status=booking.status,
             created_at=booking.created_at
         )
 
     @staticmethod
-    def get_user_bookings(db: Session, user_id: str):
+    def get_user_bookings(db: Session, user_id: int):
         bookings = db.query(Booking).filter(Booking.user_id == user_id).all()
         if not bookings:
             return []
@@ -62,6 +76,7 @@ class BookingService:
                 id=booking.id,
                 user_code=user.user_code,
                 room_code=room.room_code,
+                booking_date=booking.booking_date,
                 start_time=booking.start_time,
                 end_time=booking.end_time,
                 status=booking.status,
@@ -70,27 +85,31 @@ class BookingService:
         return list_bookings
 
     @staticmethod
-    def cancel_booking(db: Session, booking_id: int, user_id: str):
-        booking = db.query(Booking).filter(
-            Booking.id == booking_id,
-            Booking.user_id == user_id
-        ).first()
-        if not booking:
-            raise HTTPException(status.HTTP_404_NOT_FOUND, "Booking not found")
-        if booking.status != BookingStatus.active:
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Cannot cancel this booking")
-        booking.status = BookingStatus.cancelled
-        db.commit()
-        db.refresh(booking)
+    def cancel_booking(db: Session, booking_id: int, user_id: int):
+        result = None
+        try:
+            booking = db.query(Booking).filter(
+                Booking.id == booking_id,
+                Booking.user_id == user_id
+            ).first()
+            if booking.status != BookingStatus.active:
+                raise HTTPException(status.HTTP_400_BAD_REQUEST, "Cannot cancel this booking")
 
-        user = db.query(User).filter(User.id == user_id).first()
-        room = db.query(Room).filter(Room.id == booking.room_id).first()
-        return BookingReadSchema(
-            id=booking.id,
-            user_code=user.user_code,
-            room_code=room.room_code,
-            start_time=booking.start_time,
-            end_time=booking.end_time,
-            status=booking.status,
-            created_at=booking.created_at
-        )
+            booking.status = BookingStatus.cancelled
+            db.commit()
+            db.refresh(booking)
+
+            user = db.query(User).filter(User.id == user_id).first()
+            room = db.query(Room).filter(Room.id == booking.room_id).first()
+            result = BookingReadSchema(
+                id=booking.id,
+                user_code=user.user_code,
+                room_code=room.room_code,
+                booking_date=booking.booking_date,
+                start_time=booking.start_time,
+                end_time=booking.end_time,
+                status=booking.status,
+                created_at=booking.created_at
+            )
+        finally:
+            return result

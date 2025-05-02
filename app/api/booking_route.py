@@ -19,12 +19,13 @@ def book_room(
         db,
         current_user.id,
         payload.room_id,
+        payload.booking_date,
         payload.start_time,
-        payload.end_time,
+        payload.end_time
     )
     return booking
 
-@router.get("/", response_model=List[BookingReadSchema])
+@router.get("/my_bookings", response_model=List[BookingReadSchema])
 def get_bookings(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     return BookingService.get_user_bookings(db, current_user.id)
 
