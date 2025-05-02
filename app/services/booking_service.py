@@ -31,6 +31,10 @@ class BookingService:
         if conflict2:
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "This room has already booked this time.")
 
+        start = datetime.combine(booking_date, start_time)
+        if start >= datetime.now():
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Cannot book this time.")
+
         booking = Booking(
             user_id=user_id,
             room_id=room_id,
@@ -42,7 +46,6 @@ class BookingService:
         db.commit()
         db.refresh(booking)
 
-        start = datetime.combine(booking_date, start_time)
         delay = (start + timedelta(minutes=5) - datetime.now()).total_seconds()
         Timer(delay, lambda: event_subject.notify("checkin_timeout", {"booking_id": booking.id})).start()
 

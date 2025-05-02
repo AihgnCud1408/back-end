@@ -66,7 +66,7 @@ class CheckinService:
         log.checkout_time = now
 
         booking.status = BookingStatus.checked_out
-        room = db.query(Room).get(booking.room_id)
+        room = db.query(Room).filter(Room.id == booking.room_id).first()
         room.status = RoomStatus.available
 
         db.commit()

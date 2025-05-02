@@ -11,13 +11,15 @@ Base.metadata.create_all(bind=engine)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    event_subject.attach(IotObserver())
-    event_subject.attach(TimeoutObserver())
+    iot_observer = IotObserver()
+    timeout_observer = TimeoutObserver()
+    event_subject.attach(iot_observer)
+    event_subject.attach(timeout_observer)
     try:
         yield
     finally:
-        event_subject.detach(IotObserver())
-        event_subject.detach(TimeoutObserver())
+        event_subject.detach(iot_observer)
+        event_subject.detach(timeout_observer)
 
 app = FastAPI(
     title="S3-MRS",
