@@ -6,7 +6,7 @@ from app.services.room_service import RoomService
 from typing import List
 from datetime import date, time
 
-router = APIRouter(prefix="/room", tags=["rooms"])
+router = APIRouter(prefix="/rooms", tags=["rooms"])
 
 @router.get("/", response_model=List[RoomReadSchema])
 def get_all_rooms(
