@@ -39,14 +39,6 @@ app = FastAPI(
     docs_url="/docs",
 )
 
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
-
-@app.get("/hello/{name}")
-async def say_hello(name: str):
-    return {"message": f"Hello {name}"}
-
 app.include_router(auth_route.router, tags=["auth"])
 app.include_router(booking_route.router, tags=["booking"])
 app.include_router(checkin_route.router, tags=["checkin"])
