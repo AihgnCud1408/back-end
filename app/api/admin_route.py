@@ -13,11 +13,11 @@ from typing import List
 
 router = APIRouter(prefix="/admin", tags=["admin"], dependencies=[require_roles([Role.admin])])
 
-@router.get("/rooms", response_model=List[RoomReadSchema])
+@router.get("/room", response_model=List[RoomReadSchema])
 def get_all_rooms(db: Session = Depends(get_db)):
     return RoomService.get_all_rooms(db)
 
-@router.post("/rooms/create", response_model=RoomReadSchema)
+@router.post("/room/create", response_model=RoomReadSchema)
 def create_room(payload: RoomReadSchema, db: Session = Depends(get_db)):
     return RoomService.create_room(
         db,
@@ -26,11 +26,11 @@ def create_room(payload: RoomReadSchema, db: Session = Depends(get_db)):
         payload.location
     )
 
-@router.delete("/rooms/{room_id}")
+@router.delete("/room/{room_id}")
 def delete_room(room_id: int, db: Session = Depends(get_db)):
     return RoomService.delete_room(db, room_id)
 
-@router.get("/bookings", response_model=List[BookingReadSchema])
+@router.get("/booking", response_model=List[BookingReadSchema])
 def get_all_bookings(db: Session = Depends(get_db)):
     return BookingService.get_all_bookings(db)
 

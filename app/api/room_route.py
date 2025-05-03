@@ -8,7 +8,7 @@ from typing import List
 from datetime import date, time
 from app.utils.rbac import require_roles
 
-router = APIRouter(prefix="/rooms", tags=["rooms"], dependencies=[require_roles([Role.student, Role.lecturer])])
+router = APIRouter(prefix="/room", tags=["room"], dependencies=[require_roles([Role.student, Role.lecturer])])
 
 @router.get("/", response_model=List[RoomReadSchema])
 def search(
