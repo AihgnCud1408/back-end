@@ -24,4 +24,4 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
     token = AuthService.login(db, form_data.username, form_data.password)
     if not token:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Incorrect username or password")
-    return {token}
+    return token
