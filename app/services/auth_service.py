@@ -2,7 +2,6 @@ from sqlalchemy.orm import Session
 from fastapi import Depends, HTTPException, status
 from app.models.user import User, Role
 from app.schemas.auth_schema import UserInfoSchema, TokenSchema
-from app.schemas.user_schema import UserReadSchema
 from app.utils.security import hash_password, verify_password, create_access_token, decode_access_token
 from fastapi.security import OAuth2PasswordBearer
 from app.db.session import get_db

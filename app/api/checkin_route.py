@@ -4,9 +4,10 @@ from app.schemas.checkin_schema import CheckinReadSchema
 from app.services.checkin_service import CheckinService
 from app.db.session import get_db
 from app.services.auth_service import get_current_user
-from app.models.user import User
+from app.models.user import User, Role
+from app.utils.rbac import require_roles
 
-router = APIRouter(prefix="/check", tags=["checkin"])
+router = APIRouter(prefix="/check", tags=["checkin"], dependencies=[require_roles([Role.student, Role.lecturer])])
 
 @router.post("/in", response_model=CheckinReadSchema)
 def check_in(

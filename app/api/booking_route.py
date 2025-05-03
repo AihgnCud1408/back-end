@@ -5,9 +5,10 @@ from app.schemas.booking_schema import BookingCreateSchema, BookingReadSchema
 from app.services.booking_service import BookingService
 from app.db.session import get_db
 from app.services.auth_service import get_current_user
-from app.models.user import User
+from app.models.user import User, Role
+from app.utils.rbac import require_roles
 
-router = APIRouter(prefix="/booking", tags=["booking"])
+router = APIRouter(prefix="/booking", tags=["booking"], dependencies=[require_roles([Role.student, Role.lecturer])])
 
 @router.post("/", response_model=BookingReadSchema)
 def book_room(
