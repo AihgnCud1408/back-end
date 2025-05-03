@@ -25,26 +25,46 @@ class CheckinService:
 
         log = CheckinLog(booking_id=booking_id, checkin_time=now)
         db.add(log)
-
         room = db.query(Room).filter(Room.id == booking.room_id).first()
         room.status = RoomStatus.in_use
         booking.status = BookingStatus.checked_in
-
         db.commit()
         db.refresh(log)
 
         event_subject.notify("checked_in", {"room_id": booking.room_id})
 
-        return CheckinReadSchema(
-            id=log.id,
-            booking_id=booking_id,
-            room_code=room.room_code,
-            checkin_time=log.checkin_time,
-            checkout_time=None
-        )
+        return log
 
-    # @staticmethod
-    # def check_in_via_qr(db: Session, user_id: str, room_code: str):
+    @staticmethod
+    def check_in_via_qr(db: Session, user_id: int, room_code: str):
+        room = db.query(Room).filter(Room.room_code == room_code).first()
+        if not room:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "Room not found.")
+
+        now = datetime.now()
+        today = now.date()
+        current_time = now.time()
+        booking = db.query(Booking).filter(
+            Booking.user_id == user_id,
+            Booking.room_id == room.id,
+            Booking.booking_date == today,
+            Booking.start_time <= current_time,
+            Booking.end_time >= current_time,
+            Booking.status == BookingStatus.active
+        ).first()
+        if not booking:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "No matching booking found.")
+
+        log = CheckinLog(booking_id=booking.id, checkin_time=now)
+        db.add(log)
+        room.status = RoomStatus.in_use
+        booking.status = BookingStatus.checked_in
+        db.commit()
+        db.refresh(log)
+
+        event_subject.notify("checked_in", {"room_id": booking.room_id})
+
+        return log
 
     @staticmethod
     def check_out(db: Session, user_id: int, booking_id: int):
@@ -64,17 +84,9 @@ class CheckinService:
 
         now = datetime.now()
         log.checkout_time = now
-
         booking.status = BookingStatus.checked_out
         room = db.query(Room).filter(Room.id == booking.room_id).first()
         room.status = RoomStatus.available
-
         db.commit()
         db.refresh(log)
-        return CheckinReadSchema(
-            id=log.id,
-            booking_id=booking.id,
-            room_code=room.room_code,
-            checkin_time=log.checkin_time,
-            checkout_time=log.checkout_time
-        )
+        return log

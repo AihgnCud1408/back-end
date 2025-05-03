@@ -8,7 +8,7 @@ from app.models.user import User
 
 router = APIRouter(prefix="/check", tags=["checkin"])
 
-@router.post("/in/{booking_id}", response_model=CheckinReadSchema)
+@router.post("/in", response_model=CheckinReadSchema)
 def check_in(
     booking_id: int,
     db: Session = Depends(get_db),
@@ -16,15 +16,15 @@ def check_in(
 ):
     return CheckinService.check_in(db, current_user.id, booking_id)
 
-# @router.post("/in/qr/{room_code}", response_model=CheckinReadSchema)
-# def check_in_via_qr(
-#     room_code: str,
-#     db: Session = Depends(get_db),
-#     current_user: User = Depends(get_current_user)
-# ):
-#     return CheckinService.check_in_via_qr(db, current_user.id, room_code)
+@router.post("/in/qr/{room_code}", response_model=CheckinReadSchema)
+def check_in_via_qr(
+    room_code: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    return CheckinService.check_in_via_qr(db, current_user.id, room_code)
 
-@router.post("/out/{booking_id}", response_model=CheckinReadSchema)
+@router.post("/out", response_model=CheckinReadSchema)
 def check_out(
     booking_id: int,
     db: Session = Depends(get_db),

@@ -2,7 +2,7 @@ CREATE DATABASE IF NOT EXISTS s3_mrs;
 USE s3_mrs;
 
 CREATE TABLE users (
-    id CHAR(36) NOT NULL PRIMARY KEY DEFAULT (UUID()),
+    id INT AUTO_INCREMENT PRIMARY KEY,
     user_code INT NOT NULL UNIQUE,
     name VARCHAR(100) NOT NULL,
     email VARCHAR(100) NOT NULL UNIQUE,
@@ -30,13 +30,14 @@ CREATE TABLE devices (
 
 CREATE TABLE bookings (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    user_code INT NOT NULL,
+    user_id INT NOT NULL,
     room_id INT NOT NULL,
-    start_time DATETIME NOT NULL,
-    end_time DATETIME NOT NULL,
-    status ENUM('active', 'cancelled', 'completed') NOT NULL,
+    booking_date DATE NOT NULL ,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    status ENUM('active', 'cancelled', 'checked_in', 'checked_out') NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_code) REFERENCES users(user_code),
+    FOREIGN KEY (user_id) REFERENCES users(id),
     FOREIGN KEY (room_id) REFERENCES rooms(id)
 );
 

@@ -5,7 +5,8 @@ from datetime import datetime, time, date
 class BookingStatus(str, Enum):
     active = "active"
     cancelled = "cancelled"
-    completed = "completed"
+    checked_in = "checked_in"
+    checked_out = "checked_out"
 
 class BookingCreateSchema(BaseModel):
     room_id: int

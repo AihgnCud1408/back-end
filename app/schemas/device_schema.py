@@ -13,11 +13,11 @@ class DeviceStatus(str, Enum):
 
 class DeviceSchema(BaseModel):
     __tablename__ = "devices"
-    id = int
-    name = str
-    type = DeviceType
-    status = DeviceStatus
-    room_id = int
+    id: int
+    name: str
+    type: DeviceType
+    status: DeviceStatus
+    room_id: int
 
     class Config:
-        from_attribute = True
+        orm_mode = True

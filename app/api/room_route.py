@@ -9,7 +9,7 @@ from datetime import date, time
 router = APIRouter(prefix="/rooms", tags=["rooms"])
 
 @router.get("/", response_model=List[RoomReadSchema])
-def get_all_rooms(
+def search(
     booking_date: date,
     start_time: time,
     end_time: time,
