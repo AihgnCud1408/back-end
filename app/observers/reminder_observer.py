@@ -25,6 +25,6 @@ class ReminderObserver(Observer, metaclass=SingletonMeta):
                 <strong>{booking.booking_date} lúc {booking.start_time.strftime('%H:%M')}</strong>.</p>
                 <p>Vui lòng đến trước giờ để hoàn tất thủ tục check-in.</p>
             """
-            send_email(subject, body, user.email)
+            send_email(user.email, subject, body)
         finally:
             db.close()

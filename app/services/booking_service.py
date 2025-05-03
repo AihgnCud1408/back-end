@@ -58,6 +58,13 @@ class BookingService:
         else:
             event_subject.notify("checkin_timeout", {"booking_id": booking.id})
 
+        end = datetime.combine(booking_date, end_time)
+        delay_checkout = (end - datetime.now()).total_seconds()
+        if delay_checkout > 0:
+            Timer(delay_checkout, lambda: event_subject.notify("auto_checkout", {"booking_id": booking.id})).start()
+        else:
+            event_subject.notify("auto_checkout", {"booking_id": booking.id})
+
         user_code = db.query(User.user_code).filter(User.id == user_id).scalar()
         room_code = db.query(Room.room_code).filter(Room.id == room_id).scalar()
         return BookingReadSchema(

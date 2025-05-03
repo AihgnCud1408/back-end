@@ -2,16 +2,18 @@ from fastapi import FastAPI
 from app.db.session import engine
 from app.db.base import Base
 from app.api import auth_route, booking_route, checkin_route, room_route, admin_route, technician_route
-from contextlib import asynccontextmanager
+# from contextlib import asynccontextmanager
 from app.observers.subject import event_subject
 from app.observers.iot_observer import IotObserver
 from app.observers.timeout_observer import TimeoutObserver
 from app.observers.reminder_observer import ReminderObserver
+from app.observers.auto_checkout_observer import AutoCheckoutObserver
 
 Base.metadata.create_all(bind=engine)
 event_subject.attach(IotObserver())
 event_subject.attach(TimeoutObserver())
 event_subject.attach(ReminderObserver())
+event_subject.attach(AutoCheckoutObserver())
 
 # @asynccontextmanager
 # async def lifespan(app: FastAPI):

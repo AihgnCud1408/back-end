@@ -1,6 +1,8 @@
 from sqlalchemy.orm import Session
 from fastapi import Depends, HTTPException, status
 from app.models.user import User, Role
+from app.schemas.auth_schema import UserInfoSchema, TokenSchema
+from app.schemas.user_schema import UserReadSchema
 from app.utils.security import hash_password, verify_password, create_access_token, decode_access_token
 from fastapi.security import OAuth2PasswordBearer
 from app.db.session import get_db
@@ -46,4 +48,10 @@ class AuthService:
         user = db.query(User).filter(User.email == email).first()
         if not user or not verify_password(password, user.password_hash):
             return None
-        return create_access_token({"sub": user.email})
+        token = create_access_token({"sub": user.email})
+        user_out = UserInfoSchema(id=user.id, email=EmailStr(user.email), role=user.role)
+        return TokenSchema(
+            access_token=token,
+            token_type="bearer",
+            user=user_out
+        )

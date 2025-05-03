@@ -10,7 +10,7 @@ router = APIRouter()
 
 @router.post("/signup", response_model=UserReadSchema)
 def register(user: UserCreateSchema, db: Session = Depends(get_db)):
-    return AuthService().register(
+    return AuthService.register(
         db,
         user.user_code,
         user.name,
@@ -21,7 +21,7 @@ def register(user: UserCreateSchema, db: Session = Depends(get_db)):
 
 @router.post("/login", response_model=TokenSchema)
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    token = AuthService().login(db, form_data.username, form_data.password)
+    token = AuthService.login(db, form_data.username, form_data.password)
     if not token:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Incorrect username or password")
-    return {"access_token": token, "token_type": "bearer"}
+    return {token}
