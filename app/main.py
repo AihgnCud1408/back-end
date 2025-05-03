@@ -37,6 +37,7 @@ app = FastAPI(
     title="S3-MRS",
     description="Smart Study Space Management and Reservation System at HCMUT.",
     docs_url="/docs",
+    lifespan=lifespan
 )
 
 app.include_router(auth_route.router, tags=["auth"])
@@ -46,3 +47,6 @@ app.include_router(room_route.router, tags=["room"])
 app.include_router(admin_route.router, tags=["admin"])
 app.include_router(technician_route.router, tags=["technicians"])
 app.include_router(it_route.router, tags=["it"])
+
+# for r in app.router.routes:
+#     print(r.path, r.methods, getattr(r, "endpoint", r))

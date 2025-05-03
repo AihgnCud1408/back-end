@@ -8,16 +8,12 @@ class UserService:
         return db.query(User).all()
 
     @staticmethod
-    def change_role(db:Session, user_id: int, role: str):
+    def change_role(db:Session, user_id: int, role: Role):
         user = db.query(User).filter(User.id == user_id).first()
         if not user:
             raise HTTPException(status.HTTP_401_UNAUTHORIZED, "User not found.")
 
-        if role in Role.__members__:
-            user.role = Role[role]
-        else:
-            raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid role.")
-
+        user.role = role
         db.commit()
         db.refresh(user)
         return user

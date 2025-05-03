@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from typing import List
 from app.db.session import get_db
-from app.schemas.user_schema import UserReadSchema,Role
+from app.schemas.user_schema import UserReadSchema, Role
 from app.services.user_service import UserService
 from app.utils.rbac import require_roles
 
@@ -13,5 +13,5 @@ def get_all_users(db: Session = Depends(get_db)):
     return UserService.get_all_users(db)
 
 @router.patch("/users/{user_id}", response_model=UserReadSchema)
-def change_role(user_id: int, role: str, db: Session = Depends(get_db)):
+def change_role(user_id: int, role: Role, db: Session = Depends(get_db)):
     return UserService.change_role(db, user_id, role)
