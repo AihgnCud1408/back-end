@@ -46,8 +46,17 @@ class BookingService:
         db.commit()
         db.refresh(booking)
 
-        delay = (start + timedelta(minutes=5) - datetime.now()).total_seconds()
-        Timer(delay, lambda: event_subject.notify("checkin_timeout", {"booking_id": booking.id})).start()
+        delay_reminder = (start - timedelta(minutes=20) - datetime.now()).total_seconds()
+        if delay_reminder > 0:
+            Timer(delay_reminder, lambda: event_subject.notify("checkin_reminder", {"booking_id": booking.id})).start()
+        else:
+            event_subject.notify("checkin_reminder", {"booking_id": booking.id})
+
+        delay_timeout = (start + timedelta(minutes=5) - datetime.now()).total_seconds()
+        if delay_timeout > 0:
+            Timer(delay_timeout, lambda: event_subject.notify("checkin_timeout", {"booking_id": booking.id})).start()
+        else:
+            event_subject.notify("checkin_timeout", {"booking_id": booking.id})
 
         user_code = db.query(User.user_code).filter(User.id == user_id).scalar()
         room_code = db.query(Room.room_code).filter(Room.id == room_id).scalar()

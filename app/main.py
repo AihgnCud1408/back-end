@@ -6,10 +6,12 @@ from contextlib import asynccontextmanager
 from app.observers.subject import event_subject
 from app.observers.iot_observer import IotObserver
 from app.observers.timeout_observer import TimeoutObserver
+from app.observers.reminder_observer import ReminderObserver
 
 Base.metadata.create_all(bind=engine)
 event_subject.attach(IotObserver())
 event_subject.attach(TimeoutObserver())
+event_subject.attach(ReminderObserver())
 
 # @asynccontextmanager
 # async def lifespan(app: FastAPI):

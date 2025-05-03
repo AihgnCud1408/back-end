@@ -13,7 +13,11 @@ class Config(BaseSettings):
     jwt_secret: str = os.getenv("JWT_SECRET_KEY")
     jwt_algorithm: str = os.getenv("JWT_ALGORITHM")
     jwt_expire: int = int(os.getenv("JWT_EXPIRE"))
-    
+    smtp_host: str = os.getenv("SMTP_HOST")
+    smtp_port: int = int(os.getenv("SMTP_PORT"))
+    smtp_user: str = os.getenv("SMTP_USER")
+    smtp_password: str = os.getenv("SMTP_PASSWORD")
+    email_from: str = os.getenv("EMAIL_FROM")
 
     class Config:
         env_file = "/.env"
