@@ -31,7 +31,7 @@ class BookingService:
         if conflict2:
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "This room has already booked this time.")
 
-        if start_time < end_time:
+        if start_time > end_time:
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid time.")
 
         now = datetime.now()

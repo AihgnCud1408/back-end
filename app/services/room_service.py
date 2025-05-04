@@ -24,7 +24,7 @@ class RoomService:
     def create_room(db: Session, room_code: str, room_type: RoomType, location: str):
         existing = db.query(Room).filter(
             Room.room_code == room_code,
-        )
+        ).first()
         if existing:
             raise HTTPException(status.HTTP_409_CONFLICT, "Room already exists.")
 
@@ -36,7 +36,7 @@ class RoomService:
 
     @staticmethod
     def delete_room(db: Session, room_id: int):
-        room = db.query(Room).filter(Room.room_code == room_id).first()
+        room = db.query(Room).filter(Room.id == room_id).first()
         if not room:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "Room not found.")
         db.delete(room)

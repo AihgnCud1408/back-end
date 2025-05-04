@@ -3,7 +3,6 @@ USE s3_mrs;
 
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    user_code INT NOT NULL UNIQUE,
     name VARCHAR(100) NOT NULL,
     email VARCHAR(100) NOT NULL UNIQUE,
     role ENUM('student','lecturer','admin','it','technician') NOT NULL,

@@ -7,8 +7,8 @@ from app.models.device import Device
 from typing import List
 from app.utils.rbac import require_roles
 
-router = APIRouter(prefix="/technician/devices", tags=["device"], dependencies=[require_roles([Role.technician])])
+router = APIRouter(prefix="/technician", tags=["technician"], dependencies=[require_roles([Role.technician])])
 
-@router.get("/", response_model=List[DeviceSchema])
+@router.get("/device", response_model=List[DeviceSchema])
 def get_all_devices(db: Session = Depends(get_db)):
     return db.query(Device).all()
