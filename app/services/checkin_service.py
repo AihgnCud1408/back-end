@@ -4,7 +4,6 @@ from datetime import datetime
 from app.models.booking import Booking, BookingStatus
 from app.models.checkin import CheckinLog
 from app.models.room import Room, RoomStatus
-from app.schemas.checkin_schema import CheckinReadSchema
 from app.observers.subject import event_subject
 
 class CheckinService:
