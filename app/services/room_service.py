@@ -1,6 +1,6 @@
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
-from datetime import datetime, time, date
+from datetime import time, date
 from app.models.room import Room, RoomType
 from app.models.booking import Booking, BookingStatus
 

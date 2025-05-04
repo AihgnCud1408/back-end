@@ -1,5 +1,3 @@
-from sqlalchemy.orm import Session
-
 class Observer:
     def update(self, event: str, data: dict):
         pass
