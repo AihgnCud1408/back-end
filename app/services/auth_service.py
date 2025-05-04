@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from fastapi import Depends, HTTPException, status
 from app.models.user import User, Role
-from app.schemas.auth_schema import UserInfoSchema, TokenSchema
+from app.schemas.auth_schema import TokenSchema
 from app.utils.security import hash_password, verify_password, create_access_token, decode_access_token
 from fastapi.security import OAuth2PasswordBearer
 from app.db.session import get_db
@@ -24,14 +24,15 @@ def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_
 
 class AuthService:
     @staticmethod
-    def register(db: Session, user_code: int, name: str, email: EmailStr, role: Role, password: str):
+    def register(db: Session, name: str, email: EmailStr, role: Role, password: str):
+        if role in [Role.admin, Role.technician, Role.it]:
+            raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Permission denied.")
+
         if db.query(User).filter(User.email == email).first():
-            raise HTTPException(status_code=400, detail="Email already registered")
-        if db.query(User).filter(User.user_code == user_code).first():
-            raise HTTPException(status_code=400, detail="ID already registered")
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Email already registered.")
+
         hashed_password = hash_password(password)
         user = User(
-            user_code=user_code,
             name=name,
             email=str(email),
             role=role,
@@ -48,9 +49,8 @@ class AuthService:
         if not user or not verify_password(password, user.password_hash):
             return None
         token = create_access_token({"sub": user.email})
-        user_out = UserInfoSchema(id=user.id, email=EmailStr(user.email), role=user.role)
         return TokenSchema(
             access_token=token,
             token_type="bearer",
-            user=user_out
+            role=user.role
         )

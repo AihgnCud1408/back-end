@@ -9,14 +9,13 @@ class Role(str, Enum):
     technician = "technician"
 
 class UserCreateSchema(BaseModel):
-    user_code: int
     name: str
     email: EmailStr
     role: Role
     password: str
 
 class UserReadSchema(BaseModel):
-    user_code: int
+    id: int
     name: str
     email: EmailStr
     role: Role

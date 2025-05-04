@@ -12,7 +12,6 @@ router = APIRouter()
 def register(user: UserCreateSchema, db: Session = Depends(get_db)):
     return AuthService.register(
         db,
-        user.user_code,
         user.name,
         user.email,
         user.role,

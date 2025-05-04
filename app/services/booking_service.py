@@ -31,8 +31,12 @@ class BookingService:
         if conflict2:
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "This room has already booked this time.")
 
+        if start_time < end_time:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid time.")
+
+        now = datetime.now()
         start = datetime.combine(booking_date, start_time)
-        if start <= datetime.now():
+        if start <= now:
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "Cannot book this time.")
 
         booking = Booking(
@@ -46,30 +50,30 @@ class BookingService:
         db.commit()
         db.refresh(booking)
 
-        delay_reminder = (start - timedelta(minutes=20) - datetime.now()).total_seconds()
+        delay_reminder = (start - timedelta(minutes=20) - now).total_seconds()
         if delay_reminder > 0:
             Timer(delay_reminder, lambda: event_subject.notify("checkin_reminder", {"booking_id": booking.id})).start()
         else:
             event_subject.notify("checkin_reminder", {"booking_id": booking.id})
 
-        delay_timeout = (start + timedelta(minutes=5) - datetime.now()).total_seconds()
+        delay_timeout = (start + timedelta(minutes=5) - now).total_seconds()
         if delay_timeout > 0:
             Timer(delay_timeout, lambda: event_subject.notify("checkin_timeout", {"booking_id": booking.id})).start()
         else:
             event_subject.notify("checkin_timeout", {"booking_id": booking.id})
 
         end = datetime.combine(booking_date, end_time)
-        delay_checkout = (end - datetime.now()).total_seconds()
+        delay_checkout = (end - now).total_seconds()
         if delay_checkout > 0:
             Timer(delay_checkout, lambda: event_subject.notify("auto_checkout", {"booking_id": booking.id})).start()
         else:
             event_subject.notify("auto_checkout", {"booking_id": booking.id})
 
-        user_code = db.query(User.user_code).filter(User.id == user_id).scalar()
+        user_name = db.query(User.name).filter(User.id == user_id).scalar()
         room_code = db.query(Room.room_code).filter(Room.id == room_id).scalar()
         return BookingReadSchema(
             id=booking.id,
-            user_code=user_code,
+            user_name=user_name,
             room_code=room_code,
             booking_date=booking_date,
             start_time=start_time,
@@ -93,7 +97,7 @@ class BookingService:
             room = room_dict.get(booking.room_id)
             list_bookings.append(BookingReadSchema(
                 id=booking.id,
-                user_code=user.user_code,
+                user_name=user.name,
                 room_code=room.room_code,
                 booking_date=booking.booking_date,
                 start_time=booking.start_time,
@@ -105,33 +109,32 @@ class BookingService:
 
     @staticmethod
     def cancel_booking(db: Session, booking_id: int, user_id: int):
-        result = None
-        try:
-            booking = db.query(Booking).filter(
-                Booking.id == booking_id,
-                Booking.user_id == user_id
-            ).first()
-            if booking.status != BookingStatus.active:
-                raise HTTPException(status.HTTP_400_BAD_REQUEST, "Cannot cancel this booking")
+        booking = db.query(Booking).filter(
+            Booking.id == booking_id,
+            Booking.user_id == user_id
+        ).first()
+        if not booking:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "Booking not found.")
 
-            booking.status = BookingStatus.cancelled
-            db.commit()
-            db.refresh(booking)
+        if booking.status != BookingStatus.active:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Cannot cancel this booking.")
 
-            user = db.query(User).filter(User.id == user_id).first()
-            room = db.query(Room).filter(Room.id == booking.room_id).first()
-            result = BookingReadSchema(
-                id=booking.id,
-                user_code=user.user_code,
-                room_code=room.room_code,
-                booking_date=booking.booking_date,
-                start_time=booking.start_time,
-                end_time=booking.end_time,
-                status=booking.status,
-                created_at=booking.created_at
-            )
-        finally:
-            return result
+        booking.status = BookingStatus.cancelled
+        db.commit()
+        db.refresh(booking)
+
+        user_name = db.query(User.name).filter(User.id == user_id).scalar()
+        room_code = db.query(Room.room_code).filter(Room.id == booking.room_id).scalar()
+        return BookingReadSchema(
+            id=booking.id,
+            user_name=user_name,
+            room_code=room_code,
+            booking_date=booking.booking_date,
+            start_time=booking.start_time,
+            end_time=booking.end_time,
+            status=booking.status,
+            created_at=booking.created_at
+        )
 
     @staticmethod
     def get_all_bookings(db: Session):
@@ -151,7 +154,7 @@ class BookingService:
             user = user_dict.get(booking.user_id)
             list_bookings.append(BookingReadSchema(
                 id=booking.id,
-                user_code=user.user_code,
+                user_name=user.name,
                 room_code=room.room_code,
                 booking_date=booking.booking_date,
                 start_time=booking.start_time,

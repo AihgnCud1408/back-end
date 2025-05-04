@@ -16,7 +16,7 @@ class BookingCreateSchema(BaseModel):
 
 class BookingReadSchema(BaseModel):
     id: int
-    user_code: int
+    user_name: str
     room_code: str
     booking_date: date
     start_time: time
