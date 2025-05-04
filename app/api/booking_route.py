@@ -26,10 +26,15 @@ def book_room(
     )
     return booking
 
-@router.get("/my_bookings", response_model=List[BookingReadSchema])
-def get_user_bookings(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    return BookingService.get_user_bookings(db, current_user.id)
-
 @router.post("/cancel", response_model=BookingReadSchema)
 def cancel_booking(booking_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     return BookingService.cancel_booking(db, booking_id, current_user.id)
+
+@router.get("/my_bookings", response_model=List[BookingReadSchema])
+def get_user_bookings(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    return BookingService.get_active_bookings(db, current_user.id)
+
+@router.get("/history", response_model=List[BookingReadSchema])
+def get_user_bookings(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    return BookingService.get_user_bookings(db, current_user.id)
+

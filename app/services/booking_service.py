@@ -164,3 +164,27 @@ class BookingService:
             ))
         return list_bookings
 
+    @staticmethod
+    def get_active_bookings(db: Session, user_id: int):
+        bookings = db.query(Booking).filter(Booking.status.in_([BookingStatus.active, BookingStatus.checked_in])).all()
+        if not bookings:
+            return []
+
+        list_bookings = []
+        user = db.query(User).filter(User.id == user_id).first()
+        room_ids = {booking.room_id for booking in bookings}
+        rooms = db.query(Room).filter(Room.id.in_(room_ids)).all()
+        room_dict = {room.id: room for room in rooms}
+        for booking in bookings:
+            room = room_dict.get(booking.room_id)
+            list_bookings.append(BookingReadSchema(
+                id=booking.id,
+                user_name=user.name,
+                room_code=room.room_code,
+                booking_date=booking.booking_date,
+                start_time=booking.start_time,
+                end_time=booking.end_time,
+                status=booking.status,
+                created_at=booking.created_at
+            ))
+        return list_bookings
