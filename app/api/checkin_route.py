@@ -7,7 +7,7 @@ from app.services.auth_service import get_current_user
 from app.models.user import User, Role
 from app.utils.rbac import require_roles
 
-router = APIRouter(prefix="/check", tags=["checkin"], dependencies=[require_roles([Role.student, Role.lecturer])])
+router = APIRouter(prefix="/check", tags=["check"], dependencies=[require_roles([Role.student, Role.lecturer])])
 
 @router.post("/in", response_model=CheckinReadSchema)
 def check_in(
