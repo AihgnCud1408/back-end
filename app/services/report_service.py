@@ -2,6 +2,7 @@ import calendar
 from datetime import date
 from sqlalchemy.orm import Session
 from app.models.booking import Booking, BookingStatus
+from app.models.room import Room
 from app.schemas.report_schema import ReportReadSchema
 
 class ReportService:
@@ -26,10 +27,13 @@ class ReportService:
             Booking.status == BookingStatus.cancelled
         ).count()
 
+        total_rooms = db.query(Room).count()
+
         return ReportReadSchema(
             year=year,
             month=month,
             total_bookings=total_bookings,
             total_completed=total_completed,
-            total_cancelled=total_cancelled
+            total_cancelled=total_cancelled,
+            total_rooms=total_rooms
         )
