@@ -3,6 +3,7 @@ from app.observers.singleton import SingletonMeta
 from app.db.session import SessionLocal
 from app.models.booking import Booking
 from app.models.user import User
+from app.models.room import Room
 from app.services.mail_service import send_email
 
 class ReminderObserver(Observer, metaclass=SingletonMeta):
@@ -18,10 +19,11 @@ class ReminderObserver(Observer, metaclass=SingletonMeta):
         try:
             booking = db.query(Booking).filter(Booking.id == booking_id).first()
             user = db.query(User).filter(User.id == booking.user_id).first()
+            room = db.query(Room).filter(Room.id == booking.room_id).first()
             subject = "Sắp đến giờ check-in"
             body = f"""
                 <p>Chào {user.name},</p>
-                <p>Bạn có booking phòng <strong>{booking.room_code}</strong> vào
+                <p>Bạn có booking phòng <strong>{room.room_code}</strong> vào
                 <strong>{booking.booking_date} lúc {booking.start_time.strftime('%H:%M')}</strong>.</p>
                 <p>Vui lòng đến trước giờ để hoàn tất thủ tục check-in.</p>
             """

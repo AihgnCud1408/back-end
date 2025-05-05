@@ -9,7 +9,7 @@ class BookingStatus(str, Enum):
     checked_out = "checked_out"
 
 class BookingCreateSchema(BaseModel):
-    room_code: str
+    room_id: int
     booking_date: date
     start_time: time
     end_time: time
