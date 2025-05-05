@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.models.user import Role
 from app.schemas.booking_schema import BookingReadSchema
-from app.schemas.room_schema import RoomReadSchema
+from app.schemas.room_schema import RoomReadSchema, RoomCreateSchema
 from app.schemas.report_schema import ReportReadSchema
 from app.services.booking_service import BookingService
 from app.services.room_service import RoomService
@@ -18,7 +18,7 @@ def get_all_rooms(db: Session = Depends(get_db)):
     return RoomService.get_all_rooms(db)
 
 @router.post("/room/create", response_model=RoomReadSchema)
-def create_room(payload: RoomReadSchema, db: Session = Depends(get_db)):
+def create_room(payload: RoomCreateSchema, db: Session = Depends(get_db)):
     return RoomService.create_room(
         db,
         payload.room_code,
