@@ -9,14 +9,14 @@ class BookingStatus(str, Enum):
     checked_out = "checked_out"
 
 class BookingCreateSchema(BaseModel):
-    room_id: int
+    room_code: str
     booking_date: date
     start_time: time
     end_time: time
 
 class BookingReadSchema(BaseModel):
     id: int
-    user_name: str
+    user_id: int
     room_code: str
     booking_date: date
     start_time: time

@@ -30,14 +30,13 @@ CREATE TABLE devices (
 CREATE TABLE bookings (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
-    room_id INT NOT NULL,
+    room_code VARCHAR(100) NOT NULL,
     booking_date DATE NOT NULL ,
     start_time TIME NOT NULL,
     end_time TIME NOT NULL,
     status ENUM('active', 'cancelled', 'checked_in', 'checked_out') NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (room_id) REFERENCES rooms(id)
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 CREATE TABLE checkin_logs (

@@ -21,7 +21,7 @@ class ReminderObserver(Observer, metaclass=SingletonMeta):
             subject = "Sắp đến giờ check-in"
             body = f"""
                 <p>Chào {user.name},</p>
-                <p>Bạn có booking <strong>#{booking.id}</strong> vào
+                <p>Bạn có booking phòng <strong>{booking.room_code}</strong> vào
                 <strong>{booking.booking_date} lúc {booking.start_time.strftime('%H:%M')}</strong>.</p>
                 <p>Vui lòng đến trước giờ để hoàn tất thủ tục check-in.</p>
             """

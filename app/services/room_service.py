@@ -11,13 +11,13 @@ class RoomService:
 
     @staticmethod
     def get_available_rooms(db: Session, booking_date: date, start_time: time, end_time: time):
-        conflict = db.query(Booking.room_id).filter(
+        conflict = db.query(Booking.room_code).filter(
             Booking.booking_date == booking_date,
             Booking.start_time <= end_time,
             Booking.end_time >= start_time,
             Booking.status.in_([BookingStatus.active, BookingStatus.checked_in])
         ).subquery()
-        available_rooms = db.query(Room).filter(Room.id.notin_(conflict)).all()
+        available_rooms = db.query(Room).filter(Room.room_code.notin_(conflict)).all()
         return available_rooms
 
     @staticmethod
@@ -41,7 +41,7 @@ class RoomService:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "Room not found.")
 
         booking = db.query(Booking).filter(
-            Booking.room_id == room.id,
+            Booking.room_code == room.room_code,
             Booking.status.in_([BookingStatus.active, BookingStatus.checked_in])
         ).first()
         if booking:

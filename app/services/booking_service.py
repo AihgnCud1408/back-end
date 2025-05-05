@@ -3,15 +3,13 @@ from fastapi import HTTPException, status
 from datetime import datetime, time, date, timedelta
 from app.models.booking import Booking, BookingStatus
 from app.models.room import Room
-from app.models.user import User
-from app.schemas.booking_schema import BookingReadSchema
 from threading import Timer
 from app.observers.subject import event_subject
 
 class BookingService:
     @staticmethod
-    def create_booking(db: Session, user_id: int, room_id: int, booking_date: date, start_time: time, end_time: time):
-        room = db.query(Room).filter(Room.id == room_id).first()
+    def create_booking(db: Session, user_id: int, room_code: str, booking_date: date, start_time: time, end_time: time):
+        room = db.query(Room).filter(Room.room_code == room_code).first()
         if not room:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "Room not found.")
 
@@ -26,7 +24,7 @@ class BookingService:
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "You have a booking at this time.")
 
         conflict2 = db.query(Booking).filter(
-            Booking.room_id == room_id,
+            Booking.room_code == room_code,
             Booking.booking_date == booking_date,
             Booking.start_time < end_time,
             Booking.end_time > start_time,
@@ -45,7 +43,7 @@ class BookingService:
 
         booking = Booking(
             user_id=user_id,
-            room_id=room_id,
+            room_code=room_code,
             booking_date=booking_date,
             start_time=start_time,
             end_time=end_time
@@ -73,17 +71,7 @@ class BookingService:
         else:
             event_subject.notify("auto_checkout", {"booking_id": booking.id})
 
-        user_name = db.query(User.name).filter(User.id == user_id).scalar()
-        return BookingReadSchema(
-            id=booking.id,
-            user_name=user_name,
-            room_code=room.room_code,
-            booking_date=booking_date,
-            start_time=start_time,
-            end_time=end_time,
-            status=booking.status,
-            created_at=booking.created_at
-        )
+        return booking
 
     @staticmethod
     def get_user_bookings(db: Session, user_id: int):
@@ -91,24 +79,7 @@ class BookingService:
         if not bookings:
             return []
 
-        list_bookings = []
-        user = db.query(User).filter(User.id == user_id).first()
-        room_ids = {booking.room_id for booking in bookings}
-        rooms = db.query(Room).filter(Room.id.in_(room_ids)).all()
-        room_dict = {room.id: room for room in rooms}
-        for booking in bookings:
-            room = room_dict.get(booking.room_id)
-            list_bookings.append(BookingReadSchema(
-                id=booking.id,
-                user_name=user.name,
-                room_code=room.room_code,
-                booking_date=booking.booking_date,
-                start_time=booking.start_time,
-                end_time=booking.end_time,
-                status=booking.status,
-                created_at=booking.created_at
-            ))
-        return list_bookings
+        return bookings
 
     @staticmethod
     def cancel_booking(db: Session, booking_id: int, user_id: int):
@@ -126,18 +97,7 @@ class BookingService:
         db.commit()
         db.refresh(booking)
 
-        user_name = db.query(User.name).filter(User.id == user_id).scalar()
-        room_code = db.query(Room.room_code).filter(Room.id == booking.room_id).scalar()
-        return BookingReadSchema(
-            id=booking.id,
-            user_name=user_name,
-            room_code=room_code,
-            booking_date=booking.booking_date,
-            start_time=booking.start_time,
-            end_time=booking.end_time,
-            status=booking.status,
-            created_at=booking.created_at
-        )
+        return booking
 
     @staticmethod
     def get_all_bookings(db: Session):
@@ -145,27 +105,7 @@ class BookingService:
         if not bookings:
             return []
 
-        list_bookings = []
-        room_ids = {booking.room_id for booking in bookings}
-        rooms = db.query(Room).filter(Room.id.in_(room_ids)).all()
-        room_dict = {room.id: room for room in rooms}
-        user_ids = {booking.user_id for booking in bookings}
-        users = db.query(User).filter(User.id.in_(user_ids)).all()
-        user_dict = {user.id: user for user in users}
-        for booking in bookings:
-            room = room_dict.get(booking.room_id)
-            user = user_dict.get(booking.user_id)
-            list_bookings.append(BookingReadSchema(
-                id=booking.id,
-                user_name=user.name,
-                room_code=room.room_code,
-                booking_date=booking.booking_date,
-                start_time=booking.start_time,
-                end_time=booking.end_time,
-                status=booking.status,
-                created_at=booking.created_at
-            ))
-        return list_bookings
+        return bookings
 
     @staticmethod
     def get_active_bookings(db: Session, user_id: int):
@@ -176,21 +116,4 @@ class BookingService:
         if not bookings:
             return []
 
-        list_bookings = []
-        user = db.query(User).filter(User.id == user_id).first()
-        room_ids = {booking.room_id for booking in bookings}
-        rooms = db.query(Room).filter(Room.id.in_(room_ids)).all()
-        room_dict = {room.id: room for room in rooms}
-        for booking in bookings:
-            room = room_dict.get(booking.room_id)
-            list_bookings.append(BookingReadSchema(
-                id=booking.id,
-                user_name=user.name,
-                room_code=room.room_code,
-                booking_date=booking.booking_date,
-                start_time=booking.start_time,
-                end_time=booking.end_time,
-                status=booking.status,
-                created_at=booking.created_at
-            ))
-        return list_bookings
+        return bookings

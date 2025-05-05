@@ -19,7 +19,7 @@ def book_room(
     booking = BookingService.create_booking(
         db,
         current_user.id,
-        payload.room_id,
+        payload.room_code,
         payload.booking_date,
         payload.start_time,
         payload.end_time

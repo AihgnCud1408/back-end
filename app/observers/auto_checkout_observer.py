@@ -18,7 +18,7 @@ class AutoCheckoutObserver(Observer, metaclass=SingletonMeta):
             booking = db.query(Booking).filter(Booking.id == booking_id).first()
             if booking.status == BookingStatus.checked_in:
                 booking.status = BookingStatus.checked_out
-                room = db.query(Room).filter(Room.id == booking.room_id).first()
+                room = db.query(Room).filter(Room.room_code == booking.room_code).first()
                 room.status = RoomStatus.available
                 db.commit()
         finally:
