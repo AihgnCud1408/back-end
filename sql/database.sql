@@ -24,13 +24,13 @@ CREATE TABLE devices (
     type ENUM('light', 'fan', 'air_conditioner') NOT NULL,
     status ENUM('on', 'off', 'error') NOT NULL,
     room_id INT NOT NULL,
-    FOREIGN KEY (room_id) REFERENCES rooms(id)
+    FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE CASCADE
 );
 
 CREATE TABLE bookings (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
-    room_code VARCHAR(100) NOT NULL,
+    room_id INT NOT NULL,
     booking_date DATE NOT NULL ,
     start_time TIME NOT NULL,
     end_time TIME NOT NULL,
@@ -48,5 +48,16 @@ CREATE TABLE checkin_logs (
 );
 
 INSERT INTO `rooms` (`id`, `room_code`, `room_type`, `location`, `status`, `sensor`) VALUES
-(1, 'H1_101', 'group', 'tòa H1, tầng 1', 'available', 'inactive'),
-(2, 'H2_301', 'mentoring', 'tòa H2, tầng 3', 'available', 'inactive');
+(1, 'H1_106', 'individual', 'tòa H1, tầng 1', 'available', 'inactive'),
+(2, 'H1_107', 'mentoring', 'tòa H1, tầng 1', 'available', 'inactive'),
+(3, 'H1_108', 'group', 'tòa H1, tầng 1', 'available', 'inactive'),
+(4, 'H3_401', 'individual', 'tòa H3, tầng 4', 'available', 'inactive'),
+(5, 'H3_402', 'group', 'tòa H3, tầng 4', 'available', 'inactive'),
+(6, 'H3_403', 'mentoring', 'tòa H3, tầng 4', 'available', 'inactive'),
+(7, 'H6_611', 'group', 'tòa H6, tầng 6', 'available', 'inactive'),
+(8, 'H6_612', 'mentoring', 'tòa H6, tầng 6', 'available', 'inactive');
+
+INSERT INTO `users` (`id`, `name`, `email`, `role`, `password_hash`) VALUES
+(1, 'admin', 'admin@gmail.com', 'admin', '$2b$12$5ek1eswYvypnpPvdDTPabe0M6mUQLlthHYCO0N6Gg4HN3iqcEy28y'),
+(2, 'technician', 'technician@gmail.com', 'technician', '$2b$12$5RuLmoYsfkzRIbOKaaavgutBqTUnYV88OUJaGLuarJpyQWqukLWa2'),
+(3, 'it_staff', 'itstaff@gmail.com', 'it', '$2b$12$Lr8EJs7nlbk04BtSt0CLSucnBbzDzvglWjcfawisoWYunxK6sVXNy');

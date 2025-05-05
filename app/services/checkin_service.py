@@ -24,13 +24,13 @@ class CheckinService:
 
         log = CheckinLog(booking_id=booking_id, checkin_time=now)
         db.add(log)
-        room = db.query(Room).filter(Room.id == booking.room_code).first()
+        room = db.query(Room).filter(Room.id == booking.room_id).first()
         room.status = RoomStatus.in_use
         booking.status = BookingStatus.checked_in
         db.commit()
         db.refresh(log)
 
-        event_subject.notify("checked_in", {"room_code": booking.room_code})
+        event_subject.notify("checked_in", {"room_id": booking.room_id})
 
         return log
 
@@ -45,7 +45,7 @@ class CheckinService:
         current_time = now.time()
         booking = db.query(Booking).filter(
             Booking.user_id == user_id,
-            Booking.room_code == room_code,
+            Booking.room_id == room.id,
             Booking.booking_date == today,
             Booking.start_time <= current_time,
             Booking.end_time >= current_time,
@@ -61,7 +61,7 @@ class CheckinService:
         db.commit()
         db.refresh(log)
 
-        event_subject.notify("checked_in", {"room_code": booking.room_code})
+        event_subject.notify("checked_in", {"room_id": booking.room_id})
 
         return log
 
@@ -84,7 +84,7 @@ class CheckinService:
         now = datetime.now()
         log.checkout_time = now
         booking.status = BookingStatus.checked_out
-        room = db.query(Room).filter(Room.room_code == booking.room_code).first()
+        room = db.query(Room).filter(Room.id == booking.room_id).first()
         room.status = RoomStatus.available
         db.commit()
         db.refresh(log)

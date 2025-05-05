@@ -9,13 +9,13 @@ class IotObserver(Observer, metaclass=SingletonMeta):
         if event != "checked_in":
             return
 
-        room_code = data.get("room_code")
-        if not room_code:
+        room_id = data.get("room_id")
+        if not room_id:
             return
 
         db = SessionLocal()
         try:
-            room = db.query(Room).filter(Room.room_code == room_code).first()
+            room = db.query(Room).filter(Room.id == room_id).first()
             if room:
                 light = db.query(Device).filter(
                     Device.room_id == room.id,
