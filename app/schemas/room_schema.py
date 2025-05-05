@@ -15,11 +15,6 @@ class SensorStatus(str, Enum):
     active = "active"
     inactive = "inactive"
 
-class RoomCreateSchema(BaseModel):
-    room_code: str
-    room_type: RoomType
-    location: str
-
 class RoomReadSchema(BaseModel):
     id: int
     room_code: str
