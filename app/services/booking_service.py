@@ -166,7 +166,10 @@ class BookingService:
 
     @staticmethod
     def get_active_bookings(db: Session, user_id: int):
-        bookings = db.query(Booking).filter(Booking.status.in_([BookingStatus.active, BookingStatus.checked_in])).all()
+        bookings = db.query(Booking).filter(
+            Booking.user_id == user_id,
+            Booking.status.in_([BookingStatus.active, BookingStatus.checked_in])
+        ).all()
         if not bookings:
             return []
 
