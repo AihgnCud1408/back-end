@@ -39,6 +39,14 @@ class RoomService:
         room = db.query(Room).filter(Room.id == room_id).first()
         if not room:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "Room not found.")
+
+        booking = db.query(Booking).filter(
+            Booking.room_id == room.id,
+            Booking.status.in_([BookingStatus.active, BookingStatus.checked_in])
+        ).first()
+        if booking:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "This room has already been booked.")
+
         db.delete(room)
         db.commit()
         return None

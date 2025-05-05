@@ -11,6 +11,10 @@ from app.observers.subject import event_subject
 class BookingService:
     @staticmethod
     def create_booking(db: Session, user_id: int, room_id: int, booking_date: date, start_time: time, end_time: time):
+        room = db.query(Room).filter(Room.id == room_id).first()
+        if not room:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "Room not found.")
+
         conflict1 = db.query(Booking).filter(
             Booking.user_id == user_id,
             Booking.booking_date == booking_date,
@@ -70,11 +74,10 @@ class BookingService:
             event_subject.notify("auto_checkout", {"booking_id": booking.id})
 
         user_name = db.query(User.name).filter(User.id == user_id).scalar()
-        room_code = db.query(Room.room_code).filter(Room.id == room_id).scalar()
         return BookingReadSchema(
             id=booking.id,
             user_name=user_name,
-            room_code=room_code,
+            room_code=room.room_code,
             booking_date=booking_date,
             start_time=start_time,
             end_time=end_time,
