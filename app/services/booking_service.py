@@ -98,6 +98,9 @@ class BookingService:
         room_dict = {room.id: room for room in rooms}
         for booking in bookings:
             room = room_dict.get(booking.room_id)
+            if not room:
+                continue
+
             list_bookings.append(BookingReadSchema(
                 id=booking.id,
                 user_name=user.name,
@@ -155,6 +158,9 @@ class BookingService:
         for booking in bookings:
             room = room_dict.get(booking.room_id)
             user = user_dict.get(booking.user_id)
+            if not room or not user:
+                continue
+
             list_bookings.append(BookingReadSchema(
                 id=booking.id,
                 user_name=user.name,
@@ -183,6 +189,9 @@ class BookingService:
         room_dict = {room.id: room for room in rooms}
         for booking in bookings:
             room = room_dict.get(booking.room_id)
+            if not room:
+                continue
+
             list_bookings.append(BookingReadSchema(
                 id=booking.id,
                 user_name=user.name,
